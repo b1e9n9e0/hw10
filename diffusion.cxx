@@ -45,6 +45,12 @@ int main(){
   {
    for(int j=0; j<Nk; j++){
 
+   	step(u1,u0,dt,dx,D,N);
+
+      h = u0;
+      u0 = u1;
+      u1 = h;
+      t +=dt;
 
    }
    strm.str("");
@@ -63,7 +69,29 @@ void step(double* const f1, double* const f0,
           const double dt, const double dx,
           const double D, const int N)
 {
+	double* d=new double[N];
+  double* u=new double[N];
+  double* l=new double[N];
+  double C = D*dt/(dx*dx);
+  double x;
 
+  for(int i=0;i<N;i++) d[i] = -C*(2.0+(dx*dx));
+  for(int i=0;i<N;i++) u[i] = C;
+  for(int i=0;i<N;i++) l[i] = C;
+  	//obere diagonalmatrix erstellen
+  for(int i = 1; i < N; i++){
+  	x = l[i]/d[i-1];
+  	d[i] -= x*u[i-1];
+  	//l[i] = 0; auch ohne rechenne ist  das jetzt so...
+  	f0[i] -= x*f0[i-1];
+  }
+  for(int i = N-2; i >= 0; i--){
+  	f1[i] = f0[i] + D*dt/(dx*dx)*(f0[(i+1)%N] - 2*f0[i] + f0[(N+i-1)%N]);
+  }
+
+  delete[] d;
+  delete[] u;
+  delete[] l;
 }
 //-----------------------------------------------
 void initialize(double* const u0, const double dx,
